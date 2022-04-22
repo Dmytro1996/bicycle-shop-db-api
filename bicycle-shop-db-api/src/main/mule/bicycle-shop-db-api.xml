@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<flow name="bicycle-shop-db-scheduler-starter-apiFlow" doc:id="b370f3ef-84cc-482d-a417-8bb87528f066" >
+		<scheduler doc:name="Scheduler" doc:id="74eb1a2e-d050-449e-a12a-0fa8a49cf17d" >
+			<scheduling-strategy >
+				<fixed-frequency timeUnit="SECONDS"/>
+			</scheduling-strategy>
+		</scheduler>
+		<flow-ref doc:name="Flow Reference" doc:id="40ed72ae-fd34-4e25-9631-66927d719677" name="starter-Sub_Flow"/>
+	</flow>
+</mule>

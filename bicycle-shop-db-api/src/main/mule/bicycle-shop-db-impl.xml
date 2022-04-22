@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<sub-flow name="starter-Sub_Flow" doc:id="3f087bac-eda5-4437-a8ee-92ae0a6f6de7" >
+		<db:execute-script doc:name="Execute script" doc:id="51450216-d412-4a48-8b18-98408680dfe7" config-ref="Database_Config" file='#["C:\\Users\ddanylo\\AnypointStudio\\studio-workspace\\bicycle-shop-db-api\\src\\main\\resources\\sql\\sql_starting_script.sql"]'/>
+		<logger level="INFO" doc:name="Starting script executed" doc:id="8f8aba32-4a8b-4429-a00c-f1477f355ffb" message='#["Starting script executed"]'/>
+		<file:read doc:name="Read" doc:id="fc7bb9d6-f31f-4bf6-96f7-0d95c6e017ce" path="C:\Users\ddanylo\Documents\Mulesoft\DB_project\bicycles.json" />
+		<set-variable value="#[output application/json&#10;---&#10;payload]" doc:name="Set Variable" doc:id="a6c9b80f-4838-4f0f-ac27-2c23b8c25411" variableName="bicycles"/>
+		<flow-ref doc:name="Flow Reference" doc:id="e93e663f-d42a-422c-b420-a0ee78920b84" name="insert-brands-implSub_Flow"/>
+	</sub-flow>
+	<sub-flow name="insert-brands-implSub_Flow" doc:id="b17eff1f-f964-4c8d-a0ab-c127c14d4b55" >
+		<ee:transform doc:name="Retrieve brands" doc:id="fa5b2756-8b0a-4f55-959e-8e6fb30acba3">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+(((vars.bicycles distinctBy ($.brand) map(bicycle)->{
+	brand: bicycle.brand
+}) ++ (vars.bicycles distinctBy ($.frontDerailleur.brand) map(bicycle)->{
+	brand: bicycle.frontDerailleur.brand
+}) ++ (vars.bicycles distinctBy ($.rearDerailleur.brand) map(bicycle)->{
+	brand: bicycle.rearDerailleur.brand
+}) ++ (vars.bicycles distinctBy ($.cassette.brand) map(bicycle)->{
+	brand: bicycle.cassette.brand
+}) ++ (vars.bicycles distinctBy ($.crankset.brand) map(bicycle)->{
+	brand: bicycle.crankset.brand
+}) ++ (vars.bicycles distinctBy ($.brakes.brand) map(bicycle)->{
+	brand: bicycle.brakes.brand
+})) distinctBy($.brand)).*brand]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Prepare query" doc:id="16f06dd3-2730-4ea0-b09b-7666f7a1c015" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output text/plain
+---
+"INSERT INTO BRANDS(NAME) VALUES" ++ 
+((payload map(brand)->{
+	value: "('" ++ brand ++ "')"
+}).*value joinBy ",")]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="ee0ce224-82e3-4af0-9fd2-958d1cfdffa0" message="#[payload]"/>
+		<db:insert doc:name="Insert brands" doc:id="85bd9a77-661b-4460-b1de-a66b5b8f7d60" config-ref="Database_Config">
+			<db:sql ><![CDATA[#[payload]]]></db:sql>
+		</db:insert>
+	</sub-flow>
+</mule>
