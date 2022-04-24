@@ -11,7 +11,8 @@ http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/fil
 		<logger level="INFO" doc:name="Starting script executed" doc:id="8f8aba32-4a8b-4429-a00c-f1477f355ffb" message='#["Starting script executed"]'/>
 		<file:read doc:name="Read" doc:id="fc7bb9d6-f31f-4bf6-96f7-0d95c6e017ce" path="C:\Users\ddanylo\Documents\Mulesoft\DB_project\bicycles.json" />
 		<set-variable value="#[output application/json&#10;---&#10;payload]" doc:name="Set Variable" doc:id="a6c9b80f-4838-4f0f-ac27-2c23b8c25411" variableName="bicycles"/>
-		<flow-ref doc:name="Flow Reference" doc:id="e93e663f-d42a-422c-b420-a0ee78920b84" name="insert-brands-implSub_Flow"/>
+		<flow-ref doc:name="Insert brands" doc:id="e93e663f-d42a-422c-b420-a0ee78920b84" name="insert-brands-implSub_Flow"/>
+		<flow-ref doc:name="Insert transmission components" doc:id="78e9447e-4208-4a5d-8c0d-d1f3049657ad" name="insert-transmission-components-implSub_Flow"/>
 	</sub-flow>
 	<sub-flow name="insert-brands-implSub_Flow" doc:id="b17eff1f-f964-4c8d-a0ab-c127c14d4b55" >
 		<ee:transform doc:name="Retrieve brands" doc:id="fa5b2756-8b0a-4f55-959e-8e6fb30acba3">
@@ -47,6 +48,51 @@ output text/plain
 		</ee:transform>
 		<logger level="INFO" doc:name="Logger" doc:id="ee0ce224-82e3-4af0-9fd2-958d1cfdffa0" message="#[payload]"/>
 		<db:insert doc:name="Insert brands" doc:id="85bd9a77-661b-4460-b1de-a66b5b8f7d60" config-ref="Database_Config">
+			<db:sql ><![CDATA[#[payload]]]></db:sql>
+		</db:insert>
+	</sub-flow>
+	<sub-flow name="insert-transmission-components-implSub_Flow" doc:id="858e0b1a-5221-4816-ac04-83687b8165ef" >
+		<ee:transform doc:name="Retrieve transmission components" doc:id="f510a23f-d3ae-4889-b31f-1262318f453f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+fun typeTransform(componentType)=if(componentType=="frontDerailleur") "FD"
+    else if(componentType=="rearDerailleur") "RD"
+    else if(componentType=="cassette") "CAS"
+    else
+     "CRSET"
+---
+(vars.bicycles.*frontDerailleur ++ vars.bicycles.*rearDerailleur
+  ++ vars.bicycles.*cassette ++ vars.bicycles.*crankset
+  distinctBy($."type" ++ $.line ++ $.brand ++ $.speeds)) map(component)->{
+  	componentType: typeTransform(component."type"),
+  	brand: component.brand,
+  	line: component.line,
+  	speeds: component.speeds
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Prepare query" doc:id="c4c029fc-fea4-41db-a551-f841a9ff8b79" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output text/plain
+fun createUniqueCode(component)= component.brand
+  ++ component.line
+  ++ component.componentType
+  ++ component.speeds
+---
+"INSERT INTO TRANSMISSION_COMPONENTS(BRAND_ID, GROUPSET, TYPE,"
+++ "UNIQUE_CODE, SPEEDS) VALUES" ++
+((payload map(component)->{
+	value: "((SELECT ID FROM BRANDS WHERE NAME='" 
+	    ++ component.brand ++ "'),'" ++ component.line
+	    ++ "','" ++ component.componentType
+	    ++ "','" ++ createUniqueCode(component)
+	    ++ "','" ++ component.speeds ++ "')"
+}).*value joinBy ",")]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:insert doc:name="Insert transmission components" doc:id="db3e56c0-865c-4f20-b336-13313474f842" config-ref="Database_Config">
 			<db:sql ><![CDATA[#[payload]]]></db:sql>
 		</db:insert>
 	</sub-flow>
