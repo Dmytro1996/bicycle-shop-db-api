@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_fbc80954_a15f_4fb5_9c4a_f9aac36260d2_Input_Variables_bicycles = Binary
+

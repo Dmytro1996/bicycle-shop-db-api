@@ -13,6 +13,7 @@ http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/fil
 		<set-variable value="#[output application/json&#10;---&#10;payload]" doc:name="Set Variable" doc:id="a6c9b80f-4838-4f0f-ac27-2c23b8c25411" variableName="bicycles"/>
 		<flow-ref doc:name="Insert brands" doc:id="e93e663f-d42a-422c-b420-a0ee78920b84" name="insert-brands-implSub_Flow"/>
 		<flow-ref doc:name="Insert transmission components" doc:id="78e9447e-4208-4a5d-8c0d-d1f3049657ad" name="insert-transmission-components-implSub_Flow"/>
+		<flow-ref doc:name="Insert brakes" doc:id="b440ee9f-563a-47ea-b9f4-6a94f99321ba" name="insert-brakes-implSub_Flow"/>
 	</sub-flow>
 	<sub-flow name="insert-brands-implSub_Flow" doc:id="b17eff1f-f964-4c8d-a0ab-c127c14d4b55" >
 		<ee:transform doc:name="Retrieve brands" doc:id="fa5b2756-8b0a-4f55-959e-8e6fb30acba3">
@@ -93,6 +94,32 @@ fun createUniqueCode(component)= component.brand
 			</ee:message>
 		</ee:transform>
 		<db:insert doc:name="Insert transmission components" doc:id="db3e56c0-865c-4f20-b336-13313474f842" config-ref="Database_Config">
+			<db:sql ><![CDATA[#[payload]]]></db:sql>
+		</db:insert>
+	</sub-flow>
+	<sub-flow name="insert-brakes-implSub_Flow" doc:id="fbc80954-a15f-4fb5-9c4a-f9aac36260d2" >
+		<ee:transform doc:name="Retrieve brakes" doc:id="0536ed45-07cf-4a2f-a3bb-dc068c5d784f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.bicycles.*brakes distinctBy($.brand ++ $."type")]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Prepare query" doc:id="8d6be69c-3cc7-43e2-a74e-c6181380dc4e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output text/plain
+---
+"INSERT INTO BRAKES(BRAND_ID, TYPE) VALUES" ++
+((payload map(brake)->{
+	value: "((SELECT ID FROM BRANDS WHERE NAME='" 
+	    ++ brake.brand ++ "'),'" ++ brake."type"
+	    ++ "')"
+}).*value joinBy ",")]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:insert doc:name="Insert brakes" doc:id="66924ddd-44dc-450b-90c6-7b4291449a72" config-ref="Database_Config" >
 			<db:sql ><![CDATA[#[payload]]]></db:sql>
 		</db:insert>
 	</sub-flow>
