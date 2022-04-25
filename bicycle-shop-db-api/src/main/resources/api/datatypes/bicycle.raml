@@ -1,0 +1,94 @@
+#%RAML 1.0 Library
+
+types:
+  Bicycle:
+    displayName: Bicycle
+    description: Bicycle
+    properties:
+      brand:
+        type: string
+        required: true
+        example: "Cannondale"
+      type:
+        type: string
+        enum: ["MTB", "Road", "Gravel", "City"]
+        required: true
+        example: "MTB"
+      frameSize:
+        type: string
+        enum: ["XS", "S", "M", "L", "XL"]
+        required: true
+        example: "L"
+      wheelSize:
+        type: integer
+        required: true
+        example: 26
+      handlebarWidth:
+        type: integer
+        required: true
+        example: 44
+      frontDerailleur:
+        type: TransmissionComponent
+        required: true
+      rearDerailleur:
+        type: TransmissionComponent
+        required: true
+      cassette:
+        type: TransmissionComponent
+        required: true
+      crankset:
+        type: TransmissionComponent
+        required: true
+      brakes:
+        type: Brake
+        required: true
+      suspension:
+        type: string
+        enum: ["RIGID", "HARTDALE", "FULL"]
+        required: true
+        example: "HARTDALE"
+      color:
+        type: string
+        required: true
+        example: "Green"
+      weight:
+        type: number
+        required: true
+        example: 12.5
+      price:
+        type: number
+        required: true
+        example: 22499.99
+      itemsAvailable:
+        type: integer
+        minimum: 0
+        required: true
+        example: 44
+        
+  TransmissionComponent:
+    properties:
+      brand:
+        type: string
+        required: true
+        example: "Shimano"
+      line:
+        type: string
+        required: true
+        example: "Alivio"
+      speeds:
+        type: integer
+        minimum: 1
+        required: true
+        example: 9
+        
+  Brake:
+    properties:
+      brand:
+        type: string
+        required: true
+        example: "Promax"
+      type:
+        type: string
+        enum: ["Disc", "V_brakes", "Hydraulic_disc", "Caliper", "Drum"]
+        required: true
+        example: "Disc"

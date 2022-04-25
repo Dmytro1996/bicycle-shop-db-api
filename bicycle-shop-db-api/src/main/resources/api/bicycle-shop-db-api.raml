@@ -1,0 +1,56 @@
+#%RAML 1.0
+title: Bicycle Shop DB API
+version: v1
+
+uses:
+  Bicycle: datatypes/bicycle.raml
+
+/bicycles:
+  get:
+    queryParameters:
+      sortBy:
+        enum:
+          - "Price (cheaper to expensive)"
+          - "Price (expensive to cheaper)"
+          - "Popularity"
+        required: false
+        example: "Popularity"
+      brand:
+        type: string
+        required: false
+        example: "Cannondale"
+      type:
+        type: string
+        enum: ["MTB", "Road", "Gravel", "City"]
+        required: false
+        example: "MTB"
+      frameSize:
+        type: string
+        enum: ["XS", "S", "M", "L", "XL"]
+        required: true
+        example: "L"
+      brakes:
+        type: string
+        enum: ["Disc", "V_brakes", "Hydraulic_disc", "Caliper", "Drum"]
+        required: true
+        example: "Disc"
+      minPrice:
+        type: integer
+        minimum: 0
+        required: false
+        example: 10000
+      maxPrice:
+        type: integer
+        minimum: 0
+        required: false
+        example: 10000
+      page:
+        type: integer
+        minimum: 1
+        example: 1
+    responses:
+      200:
+        body:
+          application/json:
+            type: Bicycle.Bicycle[]
+            example: !include examples/bicycles.json

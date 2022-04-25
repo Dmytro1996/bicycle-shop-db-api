@@ -1,0 +1,42 @@
+[
+{
+  "type":"Road",
+  "brand":"GT",
+  "frameSize":"XS",
+  "wheelSize":28.0,
+  "handlebarWidth":40,
+  "frontDerailleur":
+    {
+      "line":"Claris",
+      "speeds":2,
+      "brand":"Shimano"
+    },
+  "rearDerailleur":
+    {
+      "line":"Sora","speeds":9,
+      "brand":"Shimano"
+    },
+  "cassette":
+    {
+      "line":"Sora",
+      "speeds":9,
+      "brand":"Shimano"
+    },
+  "crankset":
+    {
+      "line":"Sora",
+      "speeds":2,
+      "brand":"Shimano"
+    },
+  "brakes":
+    {
+      "type":"V_brakes",
+      "brand":"Tektro"
+    },
+  "suspension": "RIGID",
+  "color": "Orange",
+  "weight": 12.98,
+  "price": 30284.32,
+  "itemsAvailabilie": 30
+}
+]
