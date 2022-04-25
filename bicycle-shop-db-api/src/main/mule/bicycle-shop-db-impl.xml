@@ -14,6 +14,7 @@ http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/fil
 		<flow-ref doc:name="Insert brands" doc:id="e93e663f-d42a-422c-b420-a0ee78920b84" name="insert-brands-implSub_Flow"/>
 		<flow-ref doc:name="Insert transmission components" doc:id="78e9447e-4208-4a5d-8c0d-d1f3049657ad" name="insert-transmission-components-implSub_Flow"/>
 		<flow-ref doc:name="Insert brakes" doc:id="b440ee9f-563a-47ea-b9f4-6a94f99321ba" name="insert-brakes-implSub_Flow"/>
+		<flow-ref doc:name="Flow Reference" doc:id="3a815773-84dc-4290-a4ec-604d7d02753f" name="insert-bicycles-implSub_Flow"/>
 	</sub-flow>
 	<sub-flow name="insert-brands-implSub_Flow" doc:id="b17eff1f-f964-4c8d-a0ab-c127c14d4b55" >
 		<ee:transform doc:name="Retrieve brands" doc:id="fa5b2756-8b0a-4f55-959e-8e6fb30acba3">
@@ -57,11 +58,7 @@ output text/plain
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
-fun typeTransform(componentType)=if(componentType=="frontDerailleur") "FD"
-    else if(componentType=="rearDerailleur") "RD"
-    else if(componentType=="cassette") "CAS"
-    else
-     "CRSET"
+import * from modules::TransmissionFunctions
 ---
 (vars.bicycles.*frontDerailleur ++ vars.bicycles.*rearDerailleur
   ++ vars.bicycles.*cassette ++ vars.bicycles.*crankset
@@ -77,10 +74,7 @@ fun typeTransform(componentType)=if(componentType=="frontDerailleur") "FD"
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output text/plain
-fun createUniqueCode(component)= component.brand
-  ++ component.line
-  ++ component.componentType
-  ++ component.speeds
+import * from modules::TransmissionFunctions
 ---
 "INSERT INTO TRANSMISSION_COMPONENTS(BRAND_ID, GROUPSET, TYPE,"
 ++ "UNIQUE_CODE, SPEEDS) VALUES" ++
@@ -120,6 +114,53 @@ output text/plain
 			</ee:message>
 		</ee:transform>
 		<db:insert doc:name="Insert brakes" doc:id="66924ddd-44dc-450b-90c6-7b4291449a72" config-ref="Database_Config" >
+			<db:sql ><![CDATA[#[payload]]]></db:sql>
+		</db:insert>
+	</sub-flow>
+	<sub-flow name="insert-bicycles-implSub_Flow" doc:id="10c8f1cc-3f3f-48b4-896b-64bbf830d921" >
+		<ee:transform doc:name="Prepare query" doc:id="39f7c8d8-8197-4b14-bb4c-d21c37fb47d4" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output text/plain
+//output application/json
+import * from modules::TransmissionFunctions
+import * from dw::core::Objects
+fun getSelectQuery(component)=if((nameSet(component) contains "speeds"))
+    "(SELECT ID FROM TRANSMISSION_COMPONENTS WHERE UNIQUE_CODE='"
+    ++ createUniqueCode((component ++ {componentType: typeTransform(component."type")}))
+    ++ "')"
+  else
+    "(SELECT ID FROM "++
+    "(SELECT BRAKES.ID, BRAKES.TYPE, BRANDS.NAME AS BRAND_NAME FROM BRAKES" ++
+    	" JOIN BRANDS ON BRAKES.BRAND_ID=BRANDS.ID" ++
+    ") AS B WHERE B.BRAND_NAME='" ++ component.brand ++
+    "' AND B.TYPE='" ++ component."type" ++ "')"
+---
+//getSelectQuery(vars.bicycles[0].frontDerailleur)
+"INSERT INTO BICYCLES(BRAND_ID, TYPE, FRAME_SIZE, WHEEL_SIZE," 
+  ++ "HANDLEBAR_WIDTH, FRONT_DERAILLEUR, REAR_DERAILLEUR,"
+  ++ " CASSETTE, CRANKSET, BRAKES_ID, SUSPENSION,"
+  ++ " COLOR, WEIGHT, PRICE, ITEMS_AVAILABLE, ITEMS_SOLD"
+  ++ ") VALUES" ++ ((vars.bicycles map(bicycle)->{
+	value: "((SELECT ID FROM BRANDS WHERE NAME='" 
+	  ++ bicycle.brand ++ "'),'" ++ bicycle."type" ++ "','" 
+	  ++ bicycle.frameSize ++ "'," ++ bicycle.handlebarWidth ++ ","
+	  ++ bicycle.wheelSize ++ ","
+	  ++ getSelectQuery(bicycle.frontDerailleur) ++ ","
+	  ++ getSelectQuery(bicycle.rearDerailleur) ++ ","
+	  ++ getSelectQuery(bicycle.cassette) ++ ","
+	  ++ getSelectQuery(bicycle.crankset) ++ ","
+	  ++ getSelectQuery(bicycle.brakes) ++ ",'"
+	  ++ bicycle.suspension ++ "','"
+	  ++ bicycle.color ++ "',"
+	  ++ bicycle.weight ++ ","
+	  ++ bicycle.price ++ ","
+	  ++ bicycle.itemsAvailabilie ++ ","
+	  ++ bicycle.itemsSold ++ ")"
+    }).*value joinBy ",")// as String]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:insert doc:name="Insert bicycles" doc:id="243c1404-fd7a-4727-b060-481ca0301de4" config-ref="Database_Config" >
 			<db:sql ><![CDATA[#[payload]]]></db:sql>
 		</db:insert>
 	</sub-flow>
