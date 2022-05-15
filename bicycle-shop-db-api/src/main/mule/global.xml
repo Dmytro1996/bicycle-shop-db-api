@@ -13,5 +13,5 @@ http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/m
 	<db:config name="Database_Config" doc:name="Database Config" doc:id="a8665d10-5b28-4f01-aeea-41401f3ed4b6" >
 		<db:my-sql-connection host="${db.host}" port="${db.port}" user="${db.user}" password="${db.password}" database="${db.database}" />
 	</db:config>
-	<apikit:config outboundHeadersMapName="outboundHeadersMapName" httpStatusVarName="httpStatus" doc:name="Router" doc:id="7cfb0a53-802a-4cf0-83d5-b71772e16f22" name="Router" api="api\bicycle-shop-db-api.raml" />
+	<apikit:config outboundHeadersMapName="outboundHeadersMapName" httpStatusVarName="httpStatus" doc:name="Router" doc:id="7cfb0a53-802a-4cf0-83d5-b71772e16f22" name="bicycle-shop-db-api-config" api="api\bicycle-shop-db-api.raml" />
 </mule>

@@ -1,7 +1,75 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
-	<sub-flow name="bicycle-shop-db-implSub_Flow" doc:id="4134f60e-06ba-45d8-91be-483f762c2c56" />
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<sub-flow name="get-bicycles-implSub_Flow" doc:id="f9ec5093-6eb1-451a-9244-efb45bd6fbfb" >
+		<ee:transform doc:name="Prepare query" doc:id="75b5d9b0-0da3-4465-bf93-e525666d2a6d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output text/plain
+import * from dw::core::Objects
+fun addConditions(queryParams)=(nameSet(queryParams default {}) map(object)->{
+	    query: if(object=="brand")"BRAND='" ++ queryParams."brand" ++ "'"
+	       else if(object=="type")"TYPE='" ++ queryParams."type" ++ "'"
+	       else if(object=="frameSize")"FRAME_SIZE='" ++ queryParams."frameSize" ++ "'"
+	       else if(object=="brakes")"BRAKE_TYPE='" ++ queryParams."brakes" ++ "'"
+	       else ""
+    }).*query filter($!="") // joinBy " AND "
+fun addPriceRange(queryParams)="PRICE BETWEEN " ++ (queryParams."minPrice" default 0) ++ " AND "
+        ++ (queryParams."maxPrice" default "(SELECT MAX(PRICE) FROM BICYCLES)")       
+fun addSortOrder(queryParams)=if((queryParams."sortBy" default "Popularity") == "Popularity")
+        "ORDER BY ITEMS_SOLD DESC"
+    else if((queryParams."sortBy" default "Popularity") == "Price (cheaper to expensive)")
+        "ORDER BY PRICE"
+    else "ORDER BY PRICE DESC"
+fun addWhereClause(conditions, priceRange)=" WHERE " ++ ((conditions default [] ++ [priceRange]) joinBy " AND ")
+---
+//addWhereClause(addConditions(null),addPriceRange(null))
+"SELECT * FROM (SELECT ID,(SELECT NAME FROM BRANDS WHERE ID=BRAND_ID) AS BRAND,"
+++ "TYPE, FRAME_SIZE, WHEEL_SIZE,"
+++ "HANDLEBAR_WIDTH, SUSPENSION,"
+++ "COLOR, WEIGHT, PRICE, ITEMS_AVAILABLE,"
+++ "(SELECT NAME FROM BRANDS WHERE ID=(SELECT BRAND_ID FROM BRAKES WHERE ID=BRAKES_ID)) AS BRAKE_PRODUCER,"
+++ "(SELECT TYPE FROM BRAKES WHERE ID=BRAKES_ID) AS BRAKE_TYPE,"
+++ "(SELECT NAME FROM BRANDS WHERE ID=(SELECT BRAND_ID FROM TRANSMISSION_COMPONENTS WHERE ID=FRONT_DERAILLEUR)) AS FD_PRODUCER,"
+++ "(SELECT GROUPSET FROM TRANSMISSION_COMPONENTS WHERE ID=FRONT_DERAILLEUR) AS FD_GROUPSET,"
+++ "(SELECT SPEEDS FROM TRANSMISSION_COMPONENTS WHERE ID=FRONT_DERAILLEUR) AS FD_SPEEDS,"
+++ "(SELECT NAME FROM BRANDS WHERE ID=(SELECT BRAND_ID FROM TRANSMISSION_COMPONENTS WHERE ID=REAR_DERAILLEUR)) AS RD_PRODUCER,"
+++ "(SELECT GROUPSET FROM TRANSMISSION_COMPONENTS WHERE ID=REAR_DERAILLEUR) AS RD_GROUPSET,"
+++ "(SELECT SPEEDS FROM TRANSMISSION_COMPONENTS WHERE ID=REAR_DERAILLEUR) AS RD_SPEEDS,"
+++ "(SELECT NAME FROM BRANDS WHERE ID=(SELECT BRAND_ID FROM TRANSMISSION_COMPONENTS WHERE ID=CASSETTE)) AS CASSETTE_PRODUCER,"
+++ "(SELECT GROUPSET FROM TRANSMISSION_COMPONENTS WHERE ID=CASSETTE) AS CASSETTE_GROUPSET,"
+++ "(SELECT SPEEDS FROM TRANSMISSION_COMPONENTS WHERE ID=CASSETTE) AS CASSETTE_SPEEDS,"
+++ "(SELECT NAME FROM BRANDS WHERE ID=(SELECT BRAND_ID FROM TRANSMISSION_COMPONENTS WHERE ID=CRANKSET)) AS CRANKSET_PRODUCER,"
+++ "(SELECT GROUPSET FROM TRANSMISSION_COMPONENTS WHERE ID=CRANKSET) AS CRANKSET_GROUPSET,"
+++ "(SELECT SPEEDS FROM TRANSMISSION_COMPONENTS WHERE ID=CRANKSET) AS CRANKSET_SPEEDS,"
+++ "ITEMS_SOLD"
+++ " FROM BICYCLES) AS B" ++ 
+addWhereClause(addConditions(attributes.queryParams),
+    addPriceRange(attributes.queryParams)) ++ " "
+++ addSortOrder(attributes.queryParams)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:select doc:name="Select" doc:id="b98de8ab-4ae8-474f-99ca-899ec4671119" config-ref="Database_Config">
+			<db:sql ><![CDATA[#[payload]]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="7e0ce90a-57b3-4f1f-9aa1-fdd04af8839f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map(bicycle)->{	
+    id: bicycle."ID",
+    "type": bicycle."TYPE",
+    brand: bicycle."BRAND",
+    frameSize: bicycle."FRAME_SILE",
+    handlebarWidth: bicycle."HANDEBAR_WIDTH",
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
 </mule>
+

@@ -1,0 +1,29 @@
+%dw 2.0
+
+type auto_f9ec5093_6eb1_451a_9244_efb45bd6fbfb_Output_Payload = Array<{|  id: java_lang_Object | Null,   "type": java_lang_Object_4 | Null,   brand: java_lang_Object_7 | Null,   frameSize: java_lang_Object_10 | Null,   handlebarWidth: java_lang_Object_13 | Null|}>
+type java_lang_Object_4 = {|  |} {"typeAlias": "Object",
+"class": "java.lang.Object",
+"typeId": "java.lang.Object"}
+
+
+type java_lang_Object_7 = {|  |} {"typeAlias": "Object",
+"class": "java.lang.Object",
+"typeId": "java.lang.Object"}
+
+
+type java_lang_Object_13 = {|  |} {"typeAlias": "Object",
+"class": "java.lang.Object",
+"typeId": "java.lang.Object"}
+
+
+type java_lang_Object = {|  |} {"typeAlias": "Object",
+"class": "java.lang.Object",
+"typeId": "java.lang.Object"}
+
+
+type java_lang_Object_10 = {|  |} {"typeAlias": "Object",
+"class": "java.lang.Object",
+"typeId": "java.lang.Object"}
+
+
+

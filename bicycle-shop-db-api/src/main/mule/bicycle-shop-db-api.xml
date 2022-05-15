@@ -9,7 +9,7 @@ http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/m
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<flow name="bicycle-shop-db-apiFlow" doc:id="6bacff27-b452-45f1-b23e-461f3b3d89af" >
 		<http:listener doc:name="Listener" doc:id="8a5c1d5e-c790-40cf-9a5f-4452977dc6ba" config-ref="HTTP_Listener_config" path="/api/*"/>
-		<apikit:router doc:name="APIkit Router" doc:id="951a9ab6-7ae9-4268-8bb2-d19f5bb89043" config-ref="Router"/>
+		<apikit:router doc:name="APIkit Router" doc:id="951a9ab6-7ae9-4268-8bb2-d19f5bb89043" config-ref="bicycle-shop-db-api-config"/>
         <error-handler>
             <on-error-propagate type="APIKIT:BAD_REQUEST">
                 <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
@@ -91,9 +91,9 @@ output application/json
             </on-error-propagate>
         </error-handler>
 	</flow>
-	<flow name="bicycle-shop-db-apiFlow1" doc:id="ae01422c-3f4a-4a8c-911f-59a0baeb0719" >
+	<flow name="bicycle-shop-db-apiFlow-console" doc:id="ae01422c-3f4a-4a8c-911f-59a0baeb0719" >
 		<http:listener doc:name="Listener" doc:id="a2e288ee-5d44-4b5a-bd65-cb2ca8b99f79" config-ref="HTTP_Listener_config" path="/console/*"/>
-		<apikit:console doc:name="APIkit Console" doc:id="45fa767d-4cfb-484c-a10e-c25393ecce64" config-ref="Router"/>
+		<apikit:console doc:name="APIkit Console" doc:id="45fa767d-4cfb-484c-a10e-c25393ecce64" config-ref="bicycle-shop-db-api-config"/>
 		<error-handler >
 			<on-error-propagate enableNotifications="true" logException="true" doc:name="Copy_of_On Error Propagate" doc:id="daf6a4d4-9320-4dab-9cd8-48f0fbf3cc55" type="APIKIT:NOT_FOUND" >
 				<ee:transform doc:name="Copy_of_Transform Message" doc:id="ba258b27-664f-47fd-a34c-8485beb01a22" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" >
@@ -118,5 +118,7 @@ output application/json
 		</scheduler>
 		<flow-ref doc:name="Flow Reference" doc:id="40ed72ae-fd34-4e25-9631-66927d719677" name="starter-Sub_Flow"/>
 	</flow>
-	<flow name="get:\bicycles:application\json:bicycle-shop-db-api-config" doc:id="43145cd1-9e7f-4b88-9064-02345f9d3290" />
+	<flow name="get:\bicycles:application\json:bicycle-shop-db-api-config" doc:id="43145cd1-9e7f-4b88-9064-02345f9d3290" >
+		<flow-ref doc:name="Flow Reference" doc:id="eda0db2d-2e81-47ed-afb0-a01f3e770107" name="get-bicycles-implSub_Flow"/>
+	</flow>
 </mule>

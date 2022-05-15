@@ -27,12 +27,12 @@ uses:
       frameSize:
         type: string
         enum: ["XS", "S", "M", "L", "XL"]
-        required: true
+        required: false
         example: "L"
       brakes:
         type: string
         enum: ["Disc", "V_brakes", "Hydraulic_disc", "Caliper", "Drum"]
-        required: true
+        required: false
         example: "Disc"
       minPrice:
         type: integer
@@ -46,6 +46,7 @@ uses:
         example: 10000
       page:
         type: integer
+        required: false
         minimum: 1
         example: 1
     responses:
