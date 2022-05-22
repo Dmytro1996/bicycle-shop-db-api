@@ -50,7 +50,9 @@ fun addWhereClause(conditions, priceRange)=" WHERE " ++ ((conditions default [] 
 ++ " FROM BICYCLES) AS B" ++ 
 addWhereClause(addConditions(attributes.queryParams),
     addPriceRange(attributes.queryParams)) ++ " "
-++ addSortOrder(attributes.queryParams)]]></ee:set-payload>
+++ addSortOrder(attributes.queryParams)
+++ " LIMIT " ++  (attributes.queryParams.page default 1)*20
+++ " OFFSET " ++ ((attributes.queryParams.page default 1)-1)*20]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<db:select doc:name="Select" doc:id="b98de8ab-4ae8-474f-99ca-899ec4671119" config-ref="Database_Config">
@@ -65,8 +67,34 @@ payload map(bicycle)->{
     id: bicycle."ID",
     "type": bicycle."TYPE",
     brand: bicycle."BRAND",
-    frameSize: bicycle."FRAME_SILE",
-    handlebarWidth: bicycle."HANDEBAR_WIDTH",
+    frameSize: bicycle."FRAME_SIZE",
+    handlebarWidth: bicycle."HANDLEBAR_WIDTH",
+    wheelSize: bicycle."WHEEL_SIZE",
+    suspension: bicycle."SUSPENSION",
+    frotnDerailleur: {
+    	manufacturer: bicycle."FD_PRODUCER",
+    	groupset: bicycle."FD_GROUPSET"
+    },
+    rearDerailleur: {
+    	manufacturer: bicycle."RD_PRODUCER",
+    	groupset: bicycle."RD_GROUPSET"
+    },
+    cassette: {
+    	manufacturer: bicycle."CASSETTE_PRODUCER",
+    	groupset: bicycle."CASSETTE_GROUPSET"
+    },
+    crankset: {
+    	manufacturer: bicycle."CRANKSET_PRODUCER",
+    	groupset: bicycle."CRANKSET_GROUPSET"
+    },
+    brakes: {
+    	manufacturer: bicycle."BRAKE_PRODUCER",
+    	"type": bicycle."BRAKE_TYPE"
+    },
+    color: bicycle."COLOR",
+    weight: bicycle."WEIGHT",
+    price: bicycle."PRICE",
+    availability: (bicycle."ITEMS_SOLD">0)
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>

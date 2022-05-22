@@ -144,8 +144,8 @@ fun getSelectQuery(component)=if((nameSet(component) contains "speeds"))
   ++ ") VALUES" ++ ((vars.bicycles map(bicycle)->{
 	value: "((SELECT ID FROM BRANDS WHERE NAME='" 
 	  ++ bicycle.brand ++ "'),'" ++ bicycle."type" ++ "','" 
-	  ++ bicycle.frameSize ++ "'," ++ bicycle.handlebarWidth ++ ","
-	  ++ bicycle.wheelSize ++ ","
+	  ++ bicycle.frameSize ++ "'," ++ bicycle.wheelSize ++ ","
+	  ++ bicycle.handlebarWidth ++ ","
 	  ++ getSelectQuery(bicycle.frontDerailleur) ++ ","
 	  ++ getSelectQuery(bicycle.rearDerailleur) ++ ","
 	  ++ getSelectQuery(bicycle.cassette) ++ ","
