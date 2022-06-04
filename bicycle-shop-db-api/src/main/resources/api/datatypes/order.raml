@@ -1,0 +1,39 @@
+#RAML 1.0 DataType
+
+type: object
+properties:
+  id:
+    type: integer
+    required: false
+    minimum: 1
+    example: 1
+  firstName:
+    type: string
+    required: true
+    example: "John"
+  lastName:
+    type: string
+    required: true
+    example: "Doe"
+  email:
+    type: string
+    required: true
+    pattern: "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$"
+    example: "johndoe@mail.com"
+  phone:
+    type: string
+    required: true
+    pattern: "\\+?[0-9]{10,12}"
+    example: "+380777777777"
+  address:
+    type: string
+    required: true
+    example: "Lviv, 351 Horodotska st."
+  bicycleId:
+    type: integer
+    required: true
+    example: 1
+  delivered:
+    type: boolean
+    required: false
+    example: false

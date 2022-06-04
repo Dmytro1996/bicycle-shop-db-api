@@ -1,0 +1,39 @@
+%dw 2.0
+
+type auto_dcc2f84e_835a_4406_972d_2cbcd5df11d7_Output_Payload = Array<{|  id: java_lang_Object | Null,   firstName: java_lang_Object_4 | Null,   lastName: java_lang_Object_7 | Null,   email: java_lang_Object_10 | Null,   phone: java_lang_Object_13 | Null,   address: java_lang_Object_16 | Null,   delivered: java_lang_Object_19 | Null|}>
+type java_lang_Object_4 = {|  |} {"typeAlias": "Object",
+"class": "java.lang.Object",
+"typeId": "java.lang.Object"}
+
+
+type java_lang_Object_7 = {|  |} {"typeAlias": "Object",
+"class": "java.lang.Object",
+"typeId": "java.lang.Object"}
+
+
+type java_lang_Object_13 = {|  |} {"typeAlias": "Object",
+"class": "java.lang.Object",
+"typeId": "java.lang.Object"}
+
+
+type java_lang_Object = {|  |} {"typeAlias": "Object",
+"class": "java.lang.Object",
+"typeId": "java.lang.Object"}
+
+
+type java_lang_Object_16 = {|  |} {"typeAlias": "Object",
+"class": "java.lang.Object",
+"typeId": "java.lang.Object"}
+
+
+type java_lang_Object_10 = {|  |} {"typeAlias": "Object",
+"class": "java.lang.Object",
+"typeId": "java.lang.Object"}
+
+
+type java_lang_Object_19 = {|  |} {"typeAlias": "Object",
+"class": "java.lang.Object",
+"typeId": "java.lang.Object"}
+
+
+

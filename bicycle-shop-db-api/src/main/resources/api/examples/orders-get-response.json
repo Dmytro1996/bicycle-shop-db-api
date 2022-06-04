@@ -1,0 +1,10 @@
+[
+  {
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "johndoe@mail.com",
+    "phone": "+380777777777",
+    "address": "Lviv, 351 Horodotska st.",
+    "bicycleId": 1
+  }
+]

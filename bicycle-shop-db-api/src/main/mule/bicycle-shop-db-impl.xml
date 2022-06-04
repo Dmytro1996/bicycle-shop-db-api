@@ -99,5 +99,80 @@ payload map(bicycle)->{
 			</ee:message>
 		</ee:transform>
 	</sub-flow>
+	<sub-flow name="create-order-Sub_Flow" doc:id="3f562b6b-ea86-4671-9d20-948aa92b042d" >
+		<set-variable value="#[payload.bicycleId]" doc:name="Set Variable" doc:id="16c0f838-1a86-48bf-83df-77392798a4b3" variableName="bicycleId"/>
+		<ee:transform doc:name="Prepare insert query" doc:id="9c8e2a79-a6aa-4e27-809f-3c86dc64c9af" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output text/plain
+---
+"INSERT INTO ORDERS( FIRST_NAME, LAST_NAME, EMAIL, PHONE,"
+	++"BICYCLE_ID, ADDRESS) VALUES('" ++ payload.firstName ++ "','"
+	++ payload.lastName ++ "','"
+	++ payload.email ++ "','"
+	++ payload.phone ++ "','"
+	++ payload.bicycleId ++ "','"
+	++ payload.address ++ "')"]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="1464d800-5abf-4f32-83ac-ef10b23ced5a" message="#[payload]"/>
+		<db:insert doc:name="Insert" doc:id="8d81f3f0-3ef3-4e47-8755-823b597f0bc5" config-ref="Database_Config">
+			<db:sql ><![CDATA[#[payload]]]></db:sql>
+		</db:insert>
+		<flow-ref doc:name="Update bicycles" doc:id="1026fbfb-e77a-427e-9056-bdac27e0a597" name="update-bicycles-Sub_Flow"/>
+		<ee:transform doc:name="Transform Message" doc:id="facf3937-3646-45f4-8da0-aaf3b24f5f6e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Order succesfully created"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="get-orders-lSub_Flow" doc:id="dcc2f84e-835a-4406-972d-2cbcd5df11d7" >
+		<db:select doc:name="Select" doc:id="12ba547b-d0fe-41d9-92eb-040bbb57ab36" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT * FROM ORDERS]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="80b11c9c-d3d6-4ce1-8d82-ddcee7b2629f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map(order)->{
+	id: order."ID",
+	firstName: order."FIRST_NAME",
+	lastName: order."LAST_NAME",
+	email: order."EMAIL",
+	phone: order."PHONE",
+	address: order."ADDRESS",
+	delivered: order."DELIVERED"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="update-bicycles-Sub_Flow" doc:id="c759734c-13ec-4c30-9c85-9dbda619fcce" >
+		<db:select doc:name="Select itemsSold, itemsAvailable" doc:id="a1d9cb96-4872-4294-b2a9-738664cac678" config-ref="Database_Config">
+			<db:sql ><![CDATA[SELECT ITEMS_AVAILABLE ,ITEMS_SOLD FROM BICYCLES WHERE ID=:bicycleId]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	bicycleId: vars.bicycleId
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Prepare update statement" doc:id="c39e6559-c0c2-4686-857f-e3701625542f">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output text/plain
+---
+"UPDATE BICYCLES SET ITEMS_SOLD=" 
+  ++ (payload[0]."ITEMS_SOLD" as Number + 1)
+  ++ ",ITEMS_AVAILABLE=" ++ (payload[0]."ITEMS_AVAILABLE" as Number-1)
+  ++ " WHERE ID=" ++ vars.bicycleId]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:update doc:name="Update" doc:id="1180ed77-7b79-4b35-8beb-c7f5b43515ad" config-ref="Database_Config">
+			<db:sql ><![CDATA[#[payload]]]></db:sql>
+		</db:update>
+	</sub-flow>
 </mule>
 

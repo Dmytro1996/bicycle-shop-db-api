@@ -121,4 +121,10 @@ output application/json
 	<flow name="get:\bicycles:application\json:bicycle-shop-db-api-config" doc:id="43145cd1-9e7f-4b88-9064-02345f9d3290" >
 		<flow-ref doc:name="Flow Reference" doc:id="eda0db2d-2e81-47ed-afb0-a01f3e770107" name="get-bicycles-implSub_Flow"/>
 	</flow>
+	<flow name="get:\orders:bicycle-shop-db-api-config" doc:id="748253ea-4ce3-4f40-aba8-9063103f7147" >
+		<flow-ref doc:name="get-orders-Sub_Flow" doc:id="daac6a75-82c9-45ff-9f14-455fd64f3879" name="get-orders-lSub_Flow"/>
+	</flow>
+	<flow name="post:\order:application\json:bicycle-shop-db-api-config" doc:id="07129c2d-af8a-4b93-9cad-9a0c6f28c33d" >
+		<flow-ref doc:name="create-order-Sub_Flow" doc:id="6bc0a08e-96ba-45d0-940e-f87c9232aa2d" name="create-order-Sub_Flow"/>
+	</flow>
 </mule>
