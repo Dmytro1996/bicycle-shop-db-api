@@ -14,7 +14,7 @@ http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/fil
 		<flow-ref doc:name="Insert brands" doc:id="e93e663f-d42a-422c-b420-a0ee78920b84" name="insert-brands-implSub_Flow"/>
 		<flow-ref doc:name="Insert transmission components" doc:id="78e9447e-4208-4a5d-8c0d-d1f3049657ad" name="insert-transmission-components-implSub_Flow"/>
 		<flow-ref doc:name="Insert brakes" doc:id="b440ee9f-563a-47ea-b9f4-6a94f99321ba" name="insert-brakes-implSub_Flow"/>
-		<flow-ref doc:name="Flow Reference" doc:id="3a815773-84dc-4290-a4ec-604d7d02753f" name="insert-bicycles-implSub_Flow"/>
+		<flow-ref doc:name="Insert bicycles" doc:id="3a815773-84dc-4290-a4ec-604d7d02753f" name="insert-bicycles-implSub_Flow"/>
 	</sub-flow>
 	<sub-flow name="insert-brands-implSub_Flow" doc:id="b17eff1f-f964-4c8d-a0ab-c127c14d4b55" >
 		<ee:transform doc:name="Retrieve brands" doc:id="fa5b2756-8b0a-4f55-959e-8e6fb30acba3">
