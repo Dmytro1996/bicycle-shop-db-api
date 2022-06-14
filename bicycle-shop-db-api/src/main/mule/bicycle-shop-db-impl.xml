@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
-http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
 	<sub-flow name="get-bicycles-implSub_Flow" doc:id="f9ec5093-6eb1-451a-9244-efb45bd6fbfb" >
 		<ee:transform doc:name="Prepare query" doc:id="75b5d9b0-0da3-4465-bf93-e525666d2a6d" >
 			<ee:message >
@@ -100,6 +102,7 @@ payload map(bicycle)->{
 		</ee:transform>
 	</sub-flow>
 	<sub-flow name="create-order-Sub_Flow" doc:id="3f562b6b-ea86-4671-9d20-948aa92b042d" >
+		<flow-ref doc:name="Authenticate" doc:id="2f34e116-ba77-46bf-aa72-6787129431c5" name="authenticate-implSub_Flow" />
 		<set-variable value="#[payload.bicycleId]" doc:name="Set Variable" doc:id="16c0f838-1a86-48bf-83df-77392798a4b3" variableName="bicycleId"/>
 		<ee:transform doc:name="Prepare insert query" doc:id="9c8e2a79-a6aa-4e27-809f-3c86dc64c9af" >
 			<ee:message >
@@ -132,6 +135,10 @@ output application/json
 		</ee:transform>
 	</sub-flow>
 	<sub-flow name="get-orders-lSub_Flow" doc:id="dcc2f84e-835a-4406-972d-2cbcd5df11d7" >
+		<flow-ref doc:name="Authenticate" doc:id="eff09423-1377-47f5-ab54-f4f6ca627b2c" name="authenticate-implSub_Flow"/>
+		<validation:is-true doc:name="Check role" doc:id="f280a221-6bc3-4397-94a5-f26454f027cf" expression='#[(vars.users filter($.token==vars.token))[0].role=="Admin"]'>
+			<error-mapping sourceType="VALIDATION:INVALID_BOOLEAN" targetType="APP:AUTHORIZATION" />
+		</validation:is-true>
 		<db:select doc:name="Select" doc:id="12ba547b-d0fe-41d9-92eb-040bbb57ab36" config-ref="Database_Config">
 			<db:sql ><![CDATA[SELECT * FROM ORDERS]]></db:sql>
 		</db:select>
@@ -173,6 +180,41 @@ output text/plain
 		<db:update doc:name="Update" doc:id="1180ed77-7b79-4b35-8beb-c7f5b43515ad" config-ref="Database_Config">
 			<db:sql ><![CDATA[#[payload]]]></db:sql>
 		</db:update>
+	</sub-flow>
+	<sub-flow name="authenticate-implSub_Flow" doc:id="0a9b40bb-2f40-484e-9903-7d932ab75bb6" >
+		<set-variable value="#[output application/json&#10;import fromBase64 from dw::core::Binaries&#10;---&#10;fromBase64(splitBy(attributes.headers.'Authorization', &quot; &quot;)[1])]" doc:name="Set Variable" doc:id="2625402c-7169-4dab-be43-0f992832eae6" variableName="token"/>
+		<os:retrieve doc:name="Retrieve" doc:id="a4e7213e-b8b1-45fd-8c42-e659fa5e0922" key="users" objectStore="user_store" target="users">
+			<os:default-value ><![CDATA[#[[]]]]></os:default-value>
+		</os:retrieve>
+		<validation:is-true doc:name="Check credentials" doc:id="ff28af32-5b1a-4f8b-8842-93334d0abe78" expression="#[vars.users.*token contains vars.token]">
+			<error-mapping targetType="APP:AUTHENTICATION" />
+		</validation:is-true>
+	</sub-flow>
+	<sub-flow name="create-user-implSub_Flow" doc:id="d6904063-aca8-4364-a525-8270221881d2" >
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="cb1932ee-36bd-4e58-9fa8-5ae0f4c141df" variableName="originalPayload"/>
+		<ee:transform doc:name="to base64" doc:id="708b8af8-805f-4fe7-a525-7af580bdb3f5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+import toBase64 from dw::core::Binaries
+---
+toBase64(payload.username ++ ":" ++ payload.password)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="b6b2e968-0599-4f5f-8562-71c6283e3a98" message='#["Username:password : " ++ payload]'/>
+		<os:retrieve doc:name="Retrieve" doc:id="6811c486-9704-4927-b531-586acc2fa635" key="users" objectStore="user_store" target="users">
+			<os:default-value ><![CDATA[#[[]]]]></os:default-value>
+		</os:retrieve>
+		<os:store doc:name="Store" doc:id="aca5b43e-2d94-4cc7-80a9-37f72269bd5e" key="users" objectStore="user_store">
+			<os:value ><![CDATA[#[output application/json
+---
+(vars.users as Array) ++ [{
+	username: vars.originalPayload.username,
+	token: vars.originalPayload.username ++ ":" ++ vars.originalPayload.password,
+	role: vars.originalPayload.role
+}]]]]></os:value>
+		</os:store>
+		<set-payload value='#[output application/json&#10;---&#10;{&#10;	massage: "User created"&#10;}]' doc:name="Set Payload" doc:id="95526f5a-e920-4c26-83c6-e6d2a39976ab" />
 	</sub-flow>
 </mule>
 

@@ -7,6 +7,14 @@ uses:
   
 types:
   Order: !include datatypes/order.raml
+  User: !include datatypes/user.raml
+  
+traits:
+  token-required:
+    headers:
+      Authorization:
+        type: string
+        required: true
 
 /bicycles:
   get:
@@ -60,6 +68,7 @@ types:
             example: !include examples/bicycles.json
             
 /order:
+  is: [token-required]
   post:
     body:
       application/json:
@@ -72,6 +81,7 @@ types:
             example: !include examples/order-response.json
             
 /orders:
+  is: [token-required]
   get:
     responses:
       200:
@@ -79,3 +89,15 @@ types:
           application/json:
             type: Order[]
             example: !include examples/orders-get-response.json
+           
+/create-user:
+  post:
+    body:
+      application/json:
+        type: User
+        example: !include examples/user.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: {message: "User created"}

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<munit:config name="bicycle-shop-db-impl-test-suite.xml" />
+	<munit:test name="bicycle-shop-db-impl-test-suite-get-bicycles-implSub_FlowTest" doc:id="265ee171-2901-4c79-8c97-7c7108ab41a4" description="Test">
+		<munit:behavior >
+			<munit-tools:spy doc:name="Prepare query" doc:id="200085e4-71ed-4e27-8511-cb2e87c2d94b" processor="ee:transform">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="75b5d9b0-0da3-4465-bf93-e525666d2a6d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call>
+					<munit-tools:assert-equals doc:name="Assert equals" doc:id="96cd856e-d599-458d-a0ca-7cce0433e18b" actual="#[payload]" expected="#[{}]"/>
+				</munit-tools:before-call>
+				<munit-tools:after-call>
+					<munit-tools:assert-equals doc:name="Assert equals" doc:id="e9367507-da41-4e43-bfce-39810139a0ba" actual="#[payload]" expected="#[&quot;SELECT * FROM (SELECT ID,(SELECT NAME FROM BRANDS WHERE ID=BRAND_ID) AS BRAND,&quot;&#10;++ &quot;TYPE, FRAME_SIZE, WHEEL_SIZE,&quot;&#10;++ &quot;HANDLEBAR_WIDTH, SUSPENSION,&quot;&#10;++ &quot;COLOR, WEIGHT, PRICE, ITEMS_AVAILABLE,&quot;&#10;++ &quot;(SELECT NAME FROM BRANDS WHERE ID=(SELECT BRAND_ID FROM BRAKES WHERE ID=BRAKES_ID)) AS BRAKE_PRODUCER,&quot;&#10;++ &quot;(SELECT TYPE FROM BRAKES WHERE ID=BRAKES_ID) AS BRAKE_TYPE,&quot;&#10;++ &quot;(SELECT NAME FROM BRANDS WHERE ID=(SELECT BRAND_ID FROM TRANSMISSION_COMPONENTS WHERE ID=FRONT_DERAILLEUR)) AS FD_PRODUCER,&quot;&#10;++ &quot;(SELECT GROUPSET FROM TRANSMISSION_COMPONENTS WHERE ID=FRONT_DERAILLEUR) AS FD_GROUPSET,&quot;&#10;++ &quot;(SELECT SPEEDS FROM TRANSMISSION_COMPONENTS WHERE ID=FRONT_DERAILLEUR) AS FD_SPEEDS,&quot;&#10;++ &quot;(SELECT NAME FROM BRANDS WHERE ID=(SELECT BRAND_ID FROM TRANSMISSION_COMPONENTS WHERE ID=REAR_DERAILLEUR)) AS RD_PRODUCER,&quot;&#10;++ &quot;(SELECT GROUPSET FROM TRANSMISSION_COMPONENTS WHERE ID=REAR_DERAILLEUR) AS RD_GROUPSET,&quot;&#10;++ &quot;(SELECT SPEEDS FROM TRANSMISSION_COMPONENTS WHERE ID=REAR_DERAILLEUR) AS RD_SPEEDS,&quot;&#10;++ &quot;(SELECT NAME FROM BRANDS WHERE ID=(SELECT BRAND_ID FROM TRANSMISSION_COMPONENTS WHERE ID=CASSETTE)) AS CASSETTE_PRODUCER,&quot;&#10;++ &quot;(SELECT GROUPSET FROM TRANSMISSION_COMPONENTS WHERE ID=CASSETTE) AS CASSETTE_GROUPSET,&quot;&#10;++ &quot;(SELECT SPEEDS FROM TRANSMISSION_COMPONENTS WHERE ID=CASSETTE) AS CASSETTE_SPEEDS,&quot;&#10;++ &quot;(SELECT NAME FROM BRANDS WHERE ID=(SELECT BRAND_ID FROM TRANSMISSION_COMPONENTS WHERE ID=CRANKSET)) AS CRANKSET_PRODUCER,&quot;&#10;++ &quot;(SELECT GROUPSET FROM TRANSMISSION_COMPONENTS WHERE ID=CRANKSET) AS CRANKSET_GROUPSET,&quot;&#10;++ &quot;(SELECT SPEEDS FROM TRANSMISSION_COMPONENTS WHERE ID=CRANKSET) AS CRANKSET_SPEEDS,&quot;&#10;++ &quot;ITEMS_SOLD&quot;&#10;++ &quot; FROM BICYCLES) AS B&quot; ++&quot; WHERE BRAND='&quot; ++ attributes.queryParams.brand&#10;++ &quot;' AND TYPE='&quot; ++ attributes.queryParams.&quot;type&quot; ++ &#10;&quot;' AND PRICE BETWEEN &quot; ++ attributes.queryParams.minPrice&#10;++ &quot; AND &quot; ++ attributes.queryParams.maxPrice ++ &quot; ORDER BY ITEMS_SOLD DESC&quot; ++&#10;&quot; LIMIT 20 OFFSET 0&quot;]" message='"Actual and expected payloads are not equal"'/>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+			<munit-tools:spy doc:name="Select" doc:id="046a1a6d-a392-405e-bb67-9436e02f9b48" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="b98de8ab-4ae8-474f-99ca-899ec4671119" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert-equals doc:name="Assert equals" doc:id="3d39ea30-12c2-42a0-8035-e67bd1352e28" actual="#[typeOf(payload)]" expected='#["String"]'/>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert-equals doc:name="Assert equals" doc:id="1300bcb5-7dcc-41dc-8e2d-0f673dd7d036" actual="#[(not (payload == null)) and sizeOf(payload)&gt;0]" expected="#[true]"/>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+			<munit-tools:spy doc:name="Transform message" doc:id="35affbb2-53df-43ed-b657-e5bc32bb8333" processor="ee:transform">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="7e0ce90a-57b3-4f1f-9aa1-fdd04af8839f" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert-equals doc:name="Assert equals" doc:id="dcd09370-ab7f-4b0e-93b7-28e6b3b03de6" actual="#[(not (payload == null)) and sizeOf(payload)&gt;0]" expected="#[true]"/>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert-equals doc:name="Assert equals" doc:id="6618aaeb-4f18-4be2-a4ab-139c992aa271" actual="#[(not (payload == null)) and sizeOf(payload)&gt;0]" expected="#[true]"/>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+		</munit:behavior>
+		<munit:execution >
+			<ee:transform doc:name="Transform Message" doc:id="c8cade4c-5a96-4460-ab91-7f90e533e47a" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+					<ee:set-attributes ><![CDATA[%dw 2.0
+output application/jSON
+---
+{
+	queryParams:{
+		brand:"Cube",
+		"type": "MTB",
+		"minPrice": 10000,
+		"maxPrice": 50000
+	}
+}]]></ee:set-attributes>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="Flow-ref to get-bicycles-implSub_Flow" doc:id="08b2c76b-6d80-4ea0-ace1-56955a2774b2" name="get-bicycles-implSub_Flow"/>
+		</munit:execution>
+	</munit:test>
+	<munit:before-suite name="bicycle-shop-db-impl-test-suiteBefore_Suite" doc:id="e83f88a0-d40d-4aa8-8b88-6bae28b2409d" >
+		<flow-ref doc:name="starter-Sub_Flow" doc:id="ead1e0ba-e305-4b14-afb9-0e4fb1595538" name="starter-Sub_Flow"/>
+	</munit:before-suite>
+	<munit:after-suite name="bicycle-shop-db-impl-test-suiteAfter_Suite" doc:id="9656a398-507d-4d51-9fb3-cf8c93a1d4c9" >
+		<db:execute-script doc:name="Execute script" doc:id="b16a9dcd-2fcd-47ff-b8d8-11822f6b4266" config-ref="Database_Config">
+			<db:sql ><![CDATA[DROP TABLE IF EXISTS BICYCLES;
+DROP TABLE IF EXISTS BRAKES;
+DROP TABLE IF EXISTS TRANSMISSION_COMPONENTS;
+DROP TABLE IF EXISTS BRANDS;
+DROP TABLE IF EXISTS ORDERS;]]></db:sql>
+		</db:execute-script>
+	</munit:after-suite>
+	<munit:test name="bicycle-shop-db-impl-test-suite-create-order-Sub_FlowTest" doc:id="83a47a34-1875-47a6-8d59-285b46d095e8" description="Test">
+		<munit:behavior >
+			<munit-tools:spy doc:name="Spy" doc:id="6bf0f34d-4e9d-4def-8981-ef0f2ba6a280" processor="set-variable">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="16c0f838-1a86-48bf-83df-77392798a4b3" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert-that doc:name="Assert that" doc:id="9665fe27-e1e6-4fbf-a88a-93de96ae921b" expression="#[vars.bicycleId]" is="#[MunitTools::nullValue()]"/>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert-equals doc:name="Assert equals" doc:id="e54c287d-1470-4317-9111-67101f2944a0" actual="#[vars.bicycleId]" expected="#[1]"/>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+		</munit:behavior>
+		<munit:execution >
+			<ee:transform doc:name="Transform Message" doc:id="4e16d43e-3650-4fe4-b42c-e4d86648309b" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "johndoe@mail.com",
+    "phone": "+380777777777",
+    "address": "Lviv, 351 Horodotska st.",
+    "bicycleId": 1
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="Flow-ref to create-order-Sub_Flow" doc:id="2f3264eb-6610-43f4-8482-6151ae4f4880" name="create-order-Sub_Flow"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="bicycle-shop-db-impl-test-suite-get-orders-lSub_FlowTest" doc:id="a6e847cc-ab55-4a91-9bcd-92ef997fca52" description="Test">
+		<munit:behavior >
+			<munit-tools:spy doc:name="Spy" doc:id="caaa3c7b-0329-4907-8859-56f054f6faf1" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="12ba547b-d0fe-41d9-92eb-040bbb57ab36" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="12ba547b-d0fe-41d9-92eb-040bbb57ab36" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="12ba547b-d0fe-41d9-92eb-040bbb57ab36" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="12ba547b-d0fe-41d9-92eb-040bbb57ab36" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="12ba547b-d0fe-41d9-92eb-040bbb57ab36" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call>
+					<munit-tools:assert-that doc:name="Assert that" doc:id="a160fe02-098f-46c4-8ce9-3975856046a3" expression="#[payload]" is="#[MunitTools::nullValue()]"/>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert-equals doc:name="Assert equals" doc:id="7be32397-ae56-42e6-bf3f-f604a0f5e67d" actual="#[(not (payload == null)) and sizeOf(payload)&gt;0]" expected="#[true]"/>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to get-orders-lSub_Flow" doc:id="8a4b0d3e-e5cc-4494-bb93-02cef5256b73" name="get-orders-lSub_Flow"/>
+		</munit:execution>
+	</munit:test>
+
+
+</mule>

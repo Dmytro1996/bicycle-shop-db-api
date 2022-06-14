@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:db="http://www.mulesoft.org/schema/mule/db"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
-http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd">
-	<configuration-properties doc:name="Configuration properties" doc:id="91cae0bf-7272-41ca-91f5-33008cf2a50a" file="config.yaml" />
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<configuration-properties doc:name="Configuration properties" doc:id="91cae0bf-7272-41ca-91f5-33008cf2a50a" file="configs/${mule_env}-config.yaml" />
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="97da5373-36ab-4977-b15e-97ca7af986fb" basePath="/" >
 		<http:listener-connection host="0.0.0.0" port="${http.port}" />
 	</http:listener-config>
@@ -14,4 +16,84 @@ http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/m
 		<db:my-sql-connection host="${db.host}" port="${db.port}" user="${db.user}" password="${db.password}" database="${db.database}" />
 	</db:config>
 	<apikit:config outboundHeadersMapName="outboundHeadersMapName" httpStatusVarName="httpStatus" doc:name="Router" doc:id="7cfb0a53-802a-4cf0-83d5-b71772e16f22" name="bicycle-shop-db-api-config" api="api\bicycle-shop-db-api.raml" />
+	<configuration doc:name="Configuration" doc:id="77a228c7-452e-48bd-89c2-dd315b22bf19" defaultErrorHandler-ref="globalError_Handler" />
+	<os:object-store name="user_store" doc:name="Object store" doc:id="802bedbb-84fd-4961-b568-848e6b9fad8e" entryTtl="30" entryTtlUnit="MINUTES" expirationInterval="30" />
+	<error-handler name="globalError_Handler" doc:id="955f6f6b-1f15-4a1c-833f-62e7d4000520" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="39e21274-6f71-4dbf-a1dc-3bd1195df3f4" when='#[error.errorType.namespace=="DB"]'>
+			<ee:transform doc:name="Transform Message" doc:id="696af89c-9404-4a14-a59c-4b76fd2d80e7" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Looks like there is an issuse with database",
+	details: error.description
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<logger level="ERROR" doc:name="Logger" doc:id="5baf1a72-1a11-4727-9745-34edcbc9e712" message="#[payload]"/>
+			<set-variable value="#[500 as Number]" doc:name="Set Variable" doc:id="dac197e6-8502-4c9f-a096-67b2a124eb85" variableName="httpStatus"/>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="38b81a35-f1a0-48e2-ac3d-4a2fccf09e88" when='#[error.errorType.namespace=="FILE"]'>
+			<logger level="ERROR" doc:name="Logger" doc:id="9c330165-35bc-4bdf-b646-c0f2fa94a1e5" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	message: "Looks like there is an issuse with File connector",&#10;	details: error.description&#10;}]'/>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="825bb556-bc5a-4e3b-82db-a6c077eb2a90" type="MULE:EXPRESSION">
+			<ee:transform doc:name="Transform Message" doc:id="785accd2-d816-492b-b3aa-4daee701102d" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Looks like there is an issuse with Mule expression",
+	details: error.description
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<logger level="ERROR" doc:name="Logger" doc:id="402ce40e-4792-496f-9ff7-e8b5759dd5fc" message="#[payload]"/>
+			<set-variable value="#[500 as Number]" doc:name="Set Variable" doc:id="b55e32c6-c4c1-4dca-bf89-77cee843cfbc" variableName="httpStatus"/>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="63d6a2cf-ee98-48d6-8d1a-99d8069949f0" type="APP:AUTHENTICATION">
+			<ee:transform doc:name="Transform Message" doc:id="93ade9e2-1056-4ca0-bbb2-376413dc47a9">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Wrong credentials"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<logger level="ERROR" doc:name="Logger" doc:id="a4d5ebe5-b337-49e2-a70f-c39b097dabe4" message="#[payload]" />
+			<set-variable value="#[403 as Number]" doc:name="Set Variable" doc:id="60c99f4d-eb40-41fe-b458-298c4ebc4f5c" variableName="httpStatus" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="651110e5-7ee0-4b60-ba4c-8b7f50e16ffe" type="APP:AUTHORIZATION" >
+			<ee:transform doc:name="Transform Message" doc:id="fefd4256-72a0-42f8-999c-12ea860f50de" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Access denied"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<logger level="ERROR" doc:name="Logger" doc:id="d60afea6-4a2c-4cf6-88b2-d2d31e7334dd" message="#[payload]" />
+			<set-variable value="#[403 as Number]" doc:name="Set Variable" doc:id="4a5fbd31-ecf3-42a0-ade5-d96b8e418827" variableName="httpStatus" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="baa26b22-6f6d-4fab-aaac-d5b5295ca92b" type="ANY">
+			<ee:transform doc:name="Transform Message" doc:id="f45afa7e-8e37-488e-b378-3080b83a2f38">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	errorType: error.errorType,
+	errorDescription: error.description
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<logger level="ERROR" doc:name="Logger" doc:id="6c04539b-4313-44e7-bb07-0f1ad2c303d9" message="#[payload]" />
+			<set-variable value="#[500 as Number]" doc:name="Set Variable" doc:id="b3e89014-44db-40b5-adb4-ef2096ed889a" variableName="httpStatus" />
+		</on-error-propagate>
+	</error-handler>
 </mule>
